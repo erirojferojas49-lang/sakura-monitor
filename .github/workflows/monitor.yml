@@ -9,7 +9,8 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # Esto evita que la advertencia de Node.js detenga la ejecución
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
