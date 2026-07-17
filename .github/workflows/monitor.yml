@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Checkout repositorio
         uses: actions/checkout@v4
@@ -25,6 +24,5 @@ jobs:
           pip install feedparser
           pip install psycopg2-binary
       
-      - name: Ejecutar monitor con logs detallados
-        run: |
-          python monitor.py 2>&1 || echo "❌ Error detectado"
+      - name: Ejecutar monitor
+        run: python monitor.py
