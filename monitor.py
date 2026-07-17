@@ -9,14 +9,13 @@ from psycopg2.extras import execute_values
 from datetime import datetime
 import os
 import sys
-import socket
 
 # ============================================================================
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
 # ============================================================================
 
 # ¡¡¡CAMBIA ESTOS VALORES POR LOS TUYOS!!!
-DB_HOST = "DB_HOST = "2600:1f11:c29:8b01:fd59:2b5:3ad1:78b"
+DB_HOST = "2600:1f11:c29:8b01:fd59:2b5:3ad1:78b"  # <--- IP IPv6
 DB_NAME = "postgres"
 DB_USER = "postgres"
 DB_PASSWORD = r"7D4Ve8Kf^*aAFA&"
@@ -35,8 +34,8 @@ FEEDS = [
 # ============================================================================
 
 def get_db_connection():
+    """Intenta conectar a Supabase usando IPv6 directamente."""
     try:
-        # Usar la IP IPv6 directamente
         conn = psycopg2.connect(
             host=DB_HOST,
             database=DB_NAME,
@@ -50,7 +49,9 @@ def get_db_connection():
     except Exception as e:
         print(f"❌ ERROR CRÍTICO: No se pudo conectar a Supabase.")
         print(f"   Detalle del error: {e}")
-        sys.exit(1)    
+        print("   Revisa tus credenciales en el script (DB_HOST, DB_PASSWORD).")
+        sys.exit(1)
+
 def get_existing_urls(conn):
     cursor = conn.cursor()
     cursor.execute("SELECT url FROM feed_bruto")
