@@ -8,11 +8,13 @@ import psycopg2
 from psycopg2.extras import execute_values
 from datetime import datetime
 import os
+import sys
 
 # ============================================================================
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
 # ============================================================================
 
+# ¡¡¡CAMBIA ESTOS VALORES POR LOS TUYOS!!!
 DB_HOST = "db.iwydoymmpojjzanuweur.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
@@ -32,12 +34,21 @@ FEEDS = [
 # ============================================================================
 
 def get_db_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
+    """Intenta conectar a Supabase y maneja errores explícitamente."""
+    try:
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD
+        )
+        print("✅ Conexión a Supabase exitosa.")
+        return conn
+    except Exception as e:
+        print(f"❌ ERROR CRÍTICO: No se pudo conectar a Supabase.")
+        print(f"   Detalle del error: {e}")
+        print("   Revisa tus credenciales en el script (DB_HOST, DB_PASSWORD).")
+        sys.exit(1)
 
 def get_existing_urls(conn):
     cursor = conn.cursor()
@@ -57,9 +68,14 @@ def save_articles(conn, articles):
     VALUES %s
     ON CONFLICT (url) DO NOTHING
     """
-    execute_values(cursor, query, data)
-    conn.commit()
-    return len(data)
+    try:
+        execute_values(cursor, query, data)
+        conn.commit()
+        return len(data)
+    except Exception as e:
+        print(f"❌ Error al guardar artículos en la base de datos: {e}")
+        conn.rollback()
+        return 0
 
 def fetch_feed(feed_url, route_code):
     try:
@@ -81,11 +97,11 @@ def fetch_feed(feed_url, route_code):
             })
         return articles
     except Exception as e:
-        print(f"⚠️  Error en {feed_url}: {e}")
+        print(f"⚠️  Error al leer el feed {feed_url}: {e}")
         return []
 
 # ============================================================================
-# EJECUCIÓN
+# EJECUCIÓN PRINCIPAL
 # ============================================================================
 
 def main():
@@ -93,6 +109,7 @@ def main():
     print("=" * 50)
     
     conn = get_db_connection()
+    
     existing_urls = get_existing_urls(conn)
     print(f"📊 {len(existing_urls)} noticias ya almacenadas")
     
