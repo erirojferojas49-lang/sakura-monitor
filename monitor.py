@@ -13,10 +13,10 @@ import os
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
 # ============================================================================
 
-DB_HOST = "db.YOUR-PROJECT-ID.supabase.co"  # <--- CAMBIA ESTO
+DB_HOST = "https://iwydoymmpojjzanuweur.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
-DB_PASSWORD = "YOUR-PASSWORD"  # <--- CAMBIA ESTO
+DB_PASSWORD = "7D4Ve8Kf^*aAFA&"
 
 # Feeds a monitorear
 FEEDS = [
