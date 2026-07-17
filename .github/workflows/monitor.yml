@@ -1,0 +1,25 @@
+name: Sakura Monitor
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Instalar dependencias
+        run: |
+          pip install feedparser
+          pip install psycopg2-binary
+      - name: Ejecutar monitor
+        run: python monitor.py
