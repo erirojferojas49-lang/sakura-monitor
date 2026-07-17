@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repositorio
-        uses: actions/checkout@v5  # Actualizado a v5 (compatible con Node.js 24)
+        uses: actions/checkout@v5
       
       - name: Configurar Python
-        uses: actions/setup-python@v6  # Actualizado a v6 (compatible con Node.js 24)
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       
       - name: Instalar dependencias
         run: |
           pip install feedparser
-          pip install psycopg2-binary
+          pip install requests
       
       - name: Ejecutar monitor
         run: python monitor.py
