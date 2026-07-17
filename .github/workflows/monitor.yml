@@ -1,4 +1,4 @@
-name: Sakura Monitor
+name: Sakura Monitor V2
 
 on:
   schedule:
@@ -22,5 +22,5 @@ jobs:
           pip install feedparser
           pip install requests
       
-      - name: Ejecutar monitor
-        run: python monitor.py
+      - name: Ejecutar monitor V2
+        run: python monitor_v2.py
