@@ -1,24 +1,20 @@
 """
 SAKURA INTELLIGENCE - Monitoreo Automático
-Ejecución diaria vía GitHub Actions
+Usando la API REST de Supabase (sin conexión directa a PostgreSQL)
 """
 
 import feedparser
-import psycopg2
-from psycopg2.extras import execute_values
+import requests
 from datetime import datetime
-import os
 import sys
+import json
 
 # ============================================================================
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
 # ============================================================================
 
-# ¡¡¡CAMBIA ESTOS VALORES POR LOS TUYOS!!!
-DB_HOST = "2600:1f11:c29:8b01:fd59:2b5:3ad1:78b"  # <--- IP IPv6
-DB_NAME = "postgres"
-DB_USER = "postgres"
-DB_PASSWORD = r"7D4Ve8Kf^*aAFA&"
+SUPABASE_URL = "https://iwydoymmpojjzanuweur.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3eWRveW1tcG9qanphbnV3ZXVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyNDAwMzcsImV4cCI6MjA5OTgxNjAzN30.Q-5bsEBkHFKcU7eC2l99zVdLfdeYvjgLg1DrwxIb32I"
 
 # Feeds a monitorear
 FEEDS = [
@@ -33,53 +29,57 @@ FEEDS = [
 # FUNCIONES
 # ============================================================================
 
-def get_db_connection():
-    """Intenta conectar a Supabase usando IPv6 directamente."""
+def get_existing_urls():
+    """Obtiene las URLs ya existentes en feed_bruto (vía API REST)"""
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}"
+    }
+    url = f"{SUPABASE_URL}/rest/v1/feed_bruto?select=url"
     try:
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            sslmode='require',
-            connect_timeout=10
-        )
-        print("✅ Conexión a Supabase exitosa (IPv6).")
-        return conn
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        return {item['url'] for item in data}
     except Exception as e:
-        print(f"❌ ERROR CRÍTICO: No se pudo conectar a Supabase.")
-        print(f"   Detalle del error: {e}")
-        print("   Revisa tus credenciales en el script (DB_HOST, DB_PASSWORD).")
+        print(f"❌ Error al obtener URLs existentes: {e}")
         sys.exit(1)
 
-def get_existing_urls(conn):
-    cursor = conn.cursor()
-    cursor.execute("SELECT url FROM feed_bruto")
-    return {row[0] for row in cursor.fetchall()}
-
-def save_articles(conn, articles):
+def save_articles(articles):
+    """Guarda artículos nuevos en feed_bruto (vía API REST)"""
     if not articles:
         return 0
-    cursor = conn.cursor()
+    
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+    }
+    url = f"{SUPABASE_URL}/rest/v1/feed_bruto"
+    
     data = []
     for a in articles:
-        data.append((a['title'], a['url'], a['source'], a['pub_date'], a['route']))
+        data.append({
+            "title": a['title'],
+            "url": a['url'],
+            "source": a['source'],
+            "publication_date": a['pub_date'].isoformat() if a['pub_date'] else None,
+            "route_code": a['route'],
+            "detection_date": datetime.now().isoformat(),
+            "processed": False
+        })
     
-    query = """
-    INSERT INTO feed_bruto (title, url, source, publication_date, route_code)
-    VALUES %s
-    ON CONFLICT (url) DO NOTHING
-    """
     try:
-        execute_values(cursor, query, data)
-        conn.commit()
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        response.raise_for_status()
         return len(data)
     except Exception as e:
-        print(f"❌ Error al guardar artículos en la base de datos: {e}")
-        conn.rollback()
+        print(f"❌ Error al guardar artículos: {e}")
         return 0
 
 def fetch_feed(feed_url, route_code):
+    """Lee un feed RSS y extrae artículos"""
     try:
         feed = feedparser.parse(feed_url)
         articles = []
@@ -110,10 +110,13 @@ def main():
     print(f"🚀 Sakura Monitor - {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 50)
     
-    conn = get_db_connection()
-    
-    existing_urls = get_existing_urls(conn)
-    print(f"📊 {len(existing_urls)} noticias ya almacenadas")
+    # Verificar conexión a Supabase API
+    try:
+        existing_urls = get_existing_urls()
+        print(f"📊 {len(existing_urls)} noticias ya almacenadas")
+    except Exception as e:
+        print(f"❌ Error conectando a Supabase: {e}")
+        sys.exit(1)
     
     all_articles = []
     for feed in FEEDS:
@@ -123,11 +126,16 @@ def main():
         all_articles.extend(new)
         print(f"   ➕ {len(new)} nuevas")
     
-    saved = save_articles(conn, all_articles)
-    print("=" * 50)
-    print(f"✅ {saved} noticias guardadas en Supabase")
-    print(f"📊 Total: {len(existing_urls) + saved}")
-    conn.close()
+    if all_articles:
+        saved = save_articles(all_articles)
+        print("=" * 50)
+        print(f"✅ {saved} noticias guardadas en Supabase")
+        print(f"📊 Total: {len(existing_urls) + saved}")
+    else:
+        print("=" * 50)
+        print("✅ No hay noticias nuevas.")
+    
+    print("📋 Revisa tus datos en Supabase → Table Editor → feed_bruto")
 
 if __name__ == "__main__":
     main()
