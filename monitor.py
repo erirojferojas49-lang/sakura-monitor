@@ -16,7 +16,7 @@ import os
 DB_HOST = "db.iwydoymmpojjzanuweur.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
-DB_PASSWORD = "7D4Ve8Kf^*aAFA&"
+DB_PASSWORD = r"7D4Ve8Kf^*aAFA&"
 
 # Feeds a monitorear
 FEEDS = [
