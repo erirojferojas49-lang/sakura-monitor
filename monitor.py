@@ -13,7 +13,7 @@ import os
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
 # ============================================================================
 
-DB_HOST = "https://iwydoymmpojjzanuweur.supabase.co"
+DB_HOST = "db.iwydoymmpojjzanuweur.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
 DB_PASSWORD = "7D4Ve8Kf^*aAFA&"
