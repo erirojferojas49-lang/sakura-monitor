@@ -16,7 +16,7 @@ import socket
 # ============================================================================
 
 # ¡¡¡CAMBIA ESTOS VALORES POR LOS TUYOS!!!
-DB_HOST = "db.iwydoymmpojjzanuweur.supabase.co"
+DB_HOST = "DB_HOST = "2600:1f11:c29:8b01:fd59:2b5:3ad1:78b"
 DB_NAME = "postgres"
 DB_USER = "postgres"
 DB_PASSWORD = r"7D4Ve8Kf^*aAFA&"
@@ -35,31 +35,22 @@ FEEDS = [
 # ============================================================================
 
 def get_db_connection():
-    """
-    Intenta conectar a Supabase forzando IPv4.
-    Si falla, muestra el error.
-    """
     try:
-        # Obtener la dirección IPv4 del host
-        db_host_ip = socket.gethostbyname(DB_HOST)
-        print(f"🌐 Resolviendo {DB_HOST} → {db_host_ip} (IPv4)")
-
+        # Usar la IP IPv6 directamente
         conn = psycopg2.connect(
-            host=db_host_ip,          # Usamos la IP en lugar del nombre
+            host=DB_HOST,
             database=DB_NAME,
             user=DB_USER,
             password=DB_PASSWORD,
-            sslmode='require',        # Requiere SSL (Supabase lo exige)
-            connect_timeout=10        # Timeout de 10 segundos
+            sslmode='require',
+            connect_timeout=10
         )
-        print("✅ Conexión a Supabase exitosa.")
+        print("✅ Conexión a Supabase exitosa (IPv6).")
         return conn
     except Exception as e:
         print(f"❌ ERROR CRÍTICO: No se pudo conectar a Supabase.")
         print(f"   Detalle del error: {e}")
-        print("   Revisa tus credenciales en el script (DB_HOST, DB_PASSWORD).")
-        sys.exit(1)
-
+        sys.exit(1)    
 def get_existing_urls(conn):
     cursor = conn.cursor()
     cursor.execute("SELECT url FROM feed_bruto")
