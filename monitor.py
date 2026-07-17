@@ -9,6 +9,7 @@ from psycopg2.extras import execute_values
 from datetime import datetime
 import os
 import sys
+import socket
 
 # ============================================================================
 # CONFIGURACIÓN - TUS CREDENCIALES DE SUPABASE
@@ -34,13 +35,22 @@ FEEDS = [
 # ============================================================================
 
 def get_db_connection():
-    """Intenta conectar a Supabase y maneja errores explícitamente."""
+    """
+    Intenta conectar a Supabase forzando IPv4.
+    Si falla, muestra el error.
+    """
     try:
+        # Obtener la dirección IPv4 del host
+        db_host_ip = socket.gethostbyname(DB_HOST)
+        print(f"🌐 Resolviendo {DB_HOST} → {db_host_ip} (IPv4)")
+
         conn = psycopg2.connect(
-            host=DB_HOST,
+            host=db_host_ip,          # Usamos la IP en lugar del nombre
             database=DB_NAME,
             user=DB_USER,
-            password=DB_PASSWORD
+            password=DB_PASSWORD,
+            sslmode='require',        # Requiere SSL (Supabase lo exige)
+            connect_timeout=10        # Timeout de 10 segundos
         )
         print("✅ Conexión a Supabase exitosa.")
         return conn
