@@ -45,17 +45,17 @@ def classify_article(title, source, text=""):
     
     # Mapeo de fuentes a nivel de evidencia (0-10)
     source_weight = {
-        'AAC': 6,
-        'MLIT': 6,
-        'ANA': 5,
-        'Tocumen S.A.': 4,
-        'Copa Airlines': 3,
-        'Infobae': 2,
-        'La Prensa': 2,
-        'TVN': 2,
-        'Bloomberg': 3,
-        'Reuters': 3,
-        'Google News': 1
+        'AAC': 8,           # Antes era 6
+    'MLIT': 8,          # Antes era 6
+    'ANA': 7,           # Antes era 5
+    'Tocumen S.A.': 6,  # Antes era 4
+    'Copa Airlines': 4, # Antes era 3
+    'Infobae': 3,       # Antes era 2
+    'La Prensa': 2,     # Sigue igual
+    'TVN': 2,           # Sigue igual
+    'Bloomberg': 4,     # Antes era 3
+    'Reuters': 4,       # Antes era 3
+    'Google News': 1    # Sigue igual
     }
     
     # Palabras clave que aumentan la confianza
