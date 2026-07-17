@@ -111,13 +111,14 @@ def extract_entities(text):
     """Extrae entidades clave de un texto."""
     
     entities = {
-        'airlines': ['ANA', 'JAL', 'Copa', 'United', 'Delta', 'American', 'Air Canada', 'LATAM', 'Avianca'],
-        'airports': ['PTY', 'NRT', 'HND', 'Tocumen', 'Narita', 'Haneda', 'Ciudad de Panamá', 'Tokio'],
-        'organizations': ['AAC', 'MLIT', 'JCAB', 'Boeing', 'Airbus', 'IATA', 'OACI'],
-        'people': ['Mulino', 'Ishiba', 'Martínez-Acha', 'Bárcenas', 'Nagasawa', 'Nakayama', 'Cohen'],
-        'agreements': ['RoD', 'Acuerdo bilateral', 'Derechos de tráfico', 'Código compartido', 'Tratado'],
-        'aircraft': ['787', 'Dreamliner', '777', 'Boeing 787', 'Boeing 777', 'A350']
-    }
+    'airlines': ['ANA', 'JAL', 'Copa', 'United', 'Delta', 'American', 'Air Canada', 'LATAM', 'Avianca'],
+    'airports': ['PTY', 'NRT', 'HND', 'Tocumen', 'Narita', 'Haneda', 'Ciudad de Panamá', 'Tokio'],
+    'organizations': ['AAC', 'MLIT', 'JCAB', 'Boeing', 'Airbus', 'IATA', 'OACI', 'DGAC'],
+    'people': ['Mulino', 'Ishiba', 'Martínez-Acha', 'Bárcenas', 'Nagasawa', 'Nakayama', 'Cohen'],
+    'agreements': ['RoD', 'Acuerdo bilateral', 'Derechos de tráfico', 'Código compartido', 'Tratado', 'Open Skies'],
+    'aircraft': ['787', 'Dreamliner', '777', 'Boeing 787', 'Boeing 777', 'A350', 'A330'],
+    'regulatory': ['slot', 'permiso', 'licencia', 'autorización', 'certificado']
+}
     
     found = []
     text_lower = text.lower()
