@@ -27,6 +27,13 @@ FEEDS = [
     {'url': 'https://news.google.com/rss/search?q=All+Nippon+Airways+Panama&hl=en-US&gl=US&ceid=US:en', 'route': 'JP-PTY'},
     {'url': 'https://news.google.com/rss/search?q=Panama+Japan+aviation+agreement&hl=en-US&gl=US&ceid=US:en', 'route': 'JP-PTY'},
     {'url': 'https://news.google.com/rss/search?q=Jap%C3%B3n+Panam%C3%A1+vuelo+directo&hl=es-419&gl=PA&ceid=PA:es-419', 'route': 'JP-PTY'}
+        # ============================================================
+    # FUENTES OFICIALES (Nuevas)
+    # ============================================================
+    {'url': 'https://www.aac.gob.pa/noticias/', 'route': 'JP-PTY'},  # Autoridad Aeronáutica de Panamá
+    {'url': 'https://www.mlit.go.jp/report/press/', 'route': 'JP-PTY'},  # Ministerio de Transporte de Japón
+    {'url': 'https://www.ana.co.jp/group/en/investors/ir-news/', 'route': 'JP-PTY'},  # Noticias de ANA
+    {'url': 'https://www.tocumenpanama.aero/noticias/', 'route': 'JP-PTY'},  # Aeropuerto de Panamá
 ]
 
 # ============================================================================
