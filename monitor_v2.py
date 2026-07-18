@@ -5,9 +5,6 @@ SAKURA INTELLIGENCE — Monitor automático v3 (optimizado)
 import feedparser
 import requests
 from datetime import datetime
-import hashlib
-import re
-import time
 import os
 from dotenv import load_dotenv
 
