@@ -26,6 +26,9 @@ jobs:
           pip install python-dotenv
 
       - name: Ejecutar monitor
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           python monitor_v2.py
           echo "✅ Monitor ejecutado correctamente"
