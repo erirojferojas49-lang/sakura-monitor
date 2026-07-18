@@ -134,7 +134,7 @@ def main():
     else:
         print("=" * 50)
         print("✅ No hay noticias nuevas.")
-    
+        {'url': 'https://www.aeroroutes.com/?format=rss', 'route': 'JP-PTY'},
     print("📋 Revisa tus datos en Supabase → Table Editor → feed_bruto")
 
 if __name__ == "__main__":
