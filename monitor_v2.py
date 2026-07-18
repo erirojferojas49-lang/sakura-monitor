@@ -1,5 +1,5 @@
 """
-SAKURA INTELLIGENCE — Monitor automático v3 (con AeroRoutes)
+SAKURA INTELLIGENCE — Monitor automático con AeroRoutes
 """
 
 import feedparser
@@ -27,7 +27,7 @@ FEEDS = [
     {'url': 'https://news.google.com/rss/search?q=All+Nippon+Airways+Panama&hl=en-US&gl=US&ceid=US:en', 'route': 'JP-PTY'},
     {'url': 'https://news.google.com/rss/search?q=Panama+Japan+aviation+agreement&hl=en-US&gl=US&ceid=US:en', 'route': 'JP-PTY'},
     {'url': 'https://news.google.com/rss/search?q=Jap%C3%B3n+Panam%C3%A1+vuelo+directo&hl=es-419&gl=PA&ceid=PA:es-419', 'route': 'JP-PTY'},
-    {'url': 'https://www.aeroroutes.com/?format=rss', 'route': 'JP-PTY'},  # <--- AEROROUTES
+    {'url': 'https://www.aeroroutes.com/?format=rss', 'route': 'JP-PTY'},
 ]
 
 # ============================================================
@@ -50,6 +50,7 @@ def fetch_feed(url):
 def get_existing_urls():
     """Obtiene las URLs ya existentes en Supabase"""
     if not SUPABASE_URL or not SUPABASE_KEY:
+        print("⚠️ SUPABASE_URL o SUPABASE_KEY no configuradas")
         return set()
     headers = {
         "apikey": SUPABASE_KEY,
@@ -62,12 +63,16 @@ def get_existing_urls():
             data = response.json()
             return {item['url'] for item in data}
         return set()
-    except:
+    except Exception as e:
+        print(f"   ⚠️ Error al obtener URLs: {e}")
         return set()
 
 def save_articles(articles):
     """Guarda artículos nuevos en Supabase"""
-    if not articles or not SUPABASE_URL or not SUPABASE_KEY:
+    if not articles:
+        return 0
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("⚠️ No se pueden guardar: credenciales faltantes")
         return 0
     
     headers = {
@@ -105,7 +110,7 @@ def save_articles(articles):
             print(f"   ⚠️ Error guardando: {response.status_code}")
             return 0
     except Exception as e:
-        print(f"   ❌ Error: {e}")
+        print(f"   ❌ Error al guardar: {e}")
         return 0
 
 # ============================================================
@@ -115,6 +120,12 @@ def save_articles(articles):
 def main():
     print(f"🚀 Sakura Monitor V2 - {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 60)
+    
+    print("🔍 Verificando credenciales...")
+    if SUPABASE_URL and SUPABASE_KEY:
+        print("✅ Credenciales de Supabase encontradas")
+    else:
+        print("❌ Credenciales de Supabase NO encontradas")
     
     existing_urls = get_existing_urls()
     print(f"📊 {len(existing_urls)} noticias ya almacenadas")
