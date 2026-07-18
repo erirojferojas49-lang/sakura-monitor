@@ -34,6 +34,14 @@ FEEDS = [
     {'url': 'https://www.mlit.go.jp/report/press/', 'route': 'JP-PTY'},
     {'url': 'https://www.ana.co.jp/group/en/investors/ir-news/', 'route': 'JP-PTY'},
     {'url': 'https://www.tocumenpanama.aero/noticias/', 'route': 'JP-PTY'}
+    FEEDS = [
+    # ... feeds existentes ...
+    {
+        'url': 'https://www.aeroroutes.com/?format=rss',
+        'route': 'JP-PTY',
+        'source_type': 'especializada'
+    }
+    
 ]
 # ============================================================================
 # 1. CLASIFICACIÓN AUTOMÁTICA
