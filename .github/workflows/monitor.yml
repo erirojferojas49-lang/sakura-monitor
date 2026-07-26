@@ -1,34 +1,165 @@
-name: Sakura Monitor V2
+"""
+SAKURA MONITOR V2 - ALINEADO CON SAKURA V5
+Monitorea fuentes externas (RSS) y guarda señales en Supabase.
+"""
 
-on:
-  schedule:
-    - cron: '0 8 * * *'
-  workflow_dispatch:
+import os
+import feedparser
+import requests
+from datetime import datetime
+from dotenv import load_dotenv
 
-jobs:
-  monitor:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    steps:
-      - name: Checkout repositorio
-        uses: actions/checkout@v4
+load_dotenv()
 
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-      - name: Instalar dependencias
-        run: |
-          pip install feedparser
-          pip install requests
-          pip install python-dotenv
+# ============================================================
+# CONFIGURACIÓN DE FUENTES RSS
+# ============================================================
 
-      - name: Ejecutar monitor
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: |
-          python monitor_v2.py
-          echo "✅ Monitor ejecutado correctamente"
+FUENTES_RSS = [
+    "https://www.anacorp.jp/news/rss.xml",
+    "https://www.copaair.com/noticias/rss",
+    "https://www.aac.gob.pa/rss",
+]
+
+# ============================================================
+# CLASIFICACIÓN DE SEÑALES
+# ============================================================
+
+def clasificar_noticia(texto):
+    texto = texto.lower()
+    if any(kw in texto for kw in ['slot', 'tocumen', 'aac']):
+        return {"signal_type": "regulatorio", "trigger_id": "T1"}
+    elif any(kw in texto for kw in ['flota', 'boeing', 'airbus', '787', 'a350']):
+        return {"signal_type": "operativo", "trigger_id": "T2"}
+    elif any(kw in texto for kw in ['cielos abiertos', 'acuerdo bilateral', 'tratado']):
+        return {"signal_type": "diplomatico", "trigger_id": "T4"}
+    elif any(kw in texto for kw in ['codeshare', 'alianza', 'copa']):
+        return {"signal_type": "comercial", "trigger_id": "T6"}
+    elif any(kw in texto for kw in ['jica', 'inversion', 'financiamiento']):
+        return {"signal_type": "financiero", "trigger_id": "T7"}
+    else:
+        return {"signal_type": "general", "trigger_id": None}
+
+# ============================================================
+# GUARDAR EN SUPABASE
+# ============================================================
+
+def guardar_en_feed_bruto(noticia):
+    """Guarda la noticia en feed_bruto de Supabase."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("⚠️ Supabase no configurado")
+        return
+
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "title": noticia.get("title", "")[:200],
+        "content": noticia.get("summary", ""),
+        "source": "rss",
+        "publication_date": noticia.get("published", datetime.now().isoformat()),
+        "route_code": "JP-PTY",
+        "processed": False
+    }
+
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/feed_bruto",
+            headers=headers,
+            json=data,
+            timeout=10
+        )
+        if response.status_code in [200, 201]:
+            print(f"✅ Noticia guardada en feed_bruto: {data['title'][:50]}...")
+            return True
+        else:
+            print(f"⚠️ Error al guardar noticia: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return False
+
+def guardar_senal(noticia_id, signal_type, trigger_id):
+    """Guarda la señal en signals de Supabase."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "evidence_id": noticia_id,
+        "signal_type": signal_type,
+        "confidence_score": 70,
+        "impact_level": "medium",
+        "analysis": f"Detectado automáticamente por monitor desde {signal_type}",
+        "analyst_id": "monitor_v2"
+    }
+
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/signals",
+            headers=headers,
+            json=data,
+            timeout=10
+        )
+        if response.status_code in [200, 201]:
+            print(f"✅ Señal guardada: {trigger_id} ({signal_type})")
+            return True
+        else:
+            print(f"⚠️ Error al guardar señal: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return False
+
+# ============================================================
+# EJECUCIÓN PRINCIPAL
+# ============================================================
+
+def main():
+    print("🐋 SAKURA MONITOR V2 - ALINEADO CON V5")
+    print("=" * 50)
+
+    total_guardadas = 0
+    total_senales = 0
+
+    for url in FUENTES_RSS:
+        print(f"\n📡 Leyendo RSS: {url}")
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries[:10]:  # Últimas 10 noticias por fuente
+            titulo = entry.get("title", "")
+            if not titulo:
+                continue
+
+            # 1. Guardar en feed_bruto
+            if guardar_en_feed_bruto(entry):
+                total_guardadas += 1
+
+                # 2. Clasificar y guardar señal
+                clasificacion = clasificar_noticia(titulo)
+                if clasificacion["trigger_id"]:
+                    if guardar_senal(
+                        entry.get("id", f"rss_{datetime.now().timestamp()}"),
+                        clasificacion["signal_type"],
+                        clasificacion["trigger_id"]
+                    ):
+                        total_senales += 1
+
+    print("\n" + "=" * 50)
+    print(f"✅ Monitor completado.")
+    print(f"   📰 Noticias guardadas: {total_guardadas}")
+    print(f"   📡 Señales generadas: {total_senales}")
+
+if __name__ == "__main__":
+    main()
